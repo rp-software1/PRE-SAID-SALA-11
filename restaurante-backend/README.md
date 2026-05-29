@@ -1,98 +1,209 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Restaurante Backend (PRE-SAID · Sala 11)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+API REST con **NestJS** para gestionar el menú de platos del restaurante. Incluye persistencia local con **SQLite** (sin servidor de base de datos externo).
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Estado del proyecto (Día 1)
 
-## Description
+| Componente | Estado |
+|------------|--------|
+| Módulo **Platos** (CRUD completo) | Listo |
+| TypeORM + SQLite (`db.sqlite`) | Configurado |
+| Validación de DTOs (`class-validator`) | Activo en `/platos` |
+| Tests automatizados | Pendiente |
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Requisitos previos
 
-## Project setup
+- **Node.js** 20 LTS o superior ([nodejs.org](https://nodejs.org)). Comprobar:
+  ```bash
+  node -v
+  npm -v
+  ```
+- Si `npm` no se reconoce en Windows: añadir `C:\Program Files\nodejs` al **PATH** y reiniciar la terminal.
+- En Windows, `better-sqlite3` puede pedir herramientas de compilación. Si falla al instalar, instala [Visual Studio Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) con la carga **“Desarrollo de escritorio con C++”**.
+
+## Puesta en marcha (para todo el equipo)
 
 ```bash
-$ npm install
+# 1. Clonar el repo y entrar a esta carpeta
+cd restaurante-backend
+
+# 2. Instalar dependencias
+npm install
+
+# 3. Arrancar en modo desarrollo
+npm run start:dev
 ```
 
-## Compile and run the project
+La API queda en **http://localhost:3000** (puerto por defecto; configurable con variable de entorno `PORT`).
+
+Al primer arranque se crea automáticamente **`db.sqlite`** en la raíz de `restaurante-backend`. Cada desarrollador tiene su propia base local; **no subas `db.sqlite` al repositorio** (datos de prueba personales).
+
+### Problema frecuente: error de certificados SSL al instalar
+
+En redes con proxy, antivirus o VPN puede aparecer:
+
+```text
+npm error code UNABLE_TO_VERIFY_LEAF_SIGNATURE
+```
+
+Instalación temporal (solo si lo anterior falla):
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm install --strict-ssl=false
 ```
 
-## Run tests
+O para un solo comando:
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm install @nestjs/typeorm typeorm better-sqlite3 class-validator class-transformer --strict-ssl=false
 ```
 
-## Deployment
+En casa o con otro Wi‑Fi suele bastar `npm install` normal.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## Scripts disponibles
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+| Comando | Descripción |
+|---------|-------------|
+| `npm run start:dev` | Desarrollo con recarga automática |
+| `npm run start` | Arranque sin watch |
+| `npm run build` | Compila a `dist/` |
+| `npm run start:prod` | Ejecuta build de producción |
+| `npm run lint` | ESLint |
+| `npm run test` | Tests unitarios (cuando existan) |
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+## Estructura del código
+
+```text
+src/
+├── app.module.ts          # TypeORM (SQLite) + módulos
+├── main.ts
+└── platos/
+    ├── platos.module.ts
+    ├── platos.controller.ts
+    ├── platos.service.ts
+    ├── dto/
+    │   ├── crear-plato.dto.ts
+    │   └── actualizar-plato.dto.ts
+    └── entities/
+        └── plato.entity.ts
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## Base de datos
 
-## Resources
+- **Motor:** SQLite vía driver `better-sqlite3`
+- **Archivo:** `db.sqlite` (raíz del proyecto)
+- **Tabla:** `platos`
+- **Sincronización:** `synchronize: true` en desarrollo (TypeORM crea/actualiza el esquema al iniciar)
 
-Check out a few resources that may come in handy when working with NestJS:
+### Entidad `Plato`
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+| Campo | Tipo | Notas |
+|-------|------|--------|
+| `id` | number | Autogenerado |
+| `nombre` | string | Máx. 100 caracteres |
+| `precio` | number | Decimal, debe ser positivo |
+| `disponible` | boolean | Por defecto `true` |
+| `createdAt` | Date | Automático |
+| `updatedAt` | Date | Automático |
 
-## Support
+## API REST — Platos
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Base: `http://localhost:3000`
 
-## Stay in touch
+| Método | Ruta | Descripción | Body |
+|--------|------|-------------|------|
+| `POST` | `/platos` | Crear plato | JSON obligatorio |
+| `GET` | `/platos` | Listar todos | — |
+| `GET` | `/platos/:id` | Obtener por id | — |
+| `PATCH` | `/platos/:id` | Actualizar (parcial) | JSON parcial |
+| `DELETE` | `/platos/:id` | Eliminar | — → **204** sin cuerpo |
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### Crear plato — `POST /platos`
 
-## License
+Headers: `Content-Type: application/json`
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+```json
+{
+  "nombre": "Pizza margarita",
+  "precio": 12.5,
+  "disponible": true
+}
+```
+
+`disponible` es opcional (default `true`).
+
+### Actualizar plato — `PATCH /platos/:id`
+
+Solo envía los campos a cambiar:
+
+```json
+{
+  "precio": 14.99,
+  "disponible": false
+}
+```
+
+### Respuestas de error habituales
+
+| Código | Motivo |
+|--------|--------|
+| `400` | Body inválido o validación fallida (precio ≤ 0, nombre vacío, campos no permitidos) |
+| `404` | No existe un plato con ese `id` |
+
+## Cómo probar los endpoints
+
+1. Asegúrate de que `npm run start:dev` esté en ejecución sin errores.
+2. Usa **Postman**, **Thunder Client** (extensión de VS Code/Cursor) o **PowerShell**:
+
+```powershell
+# Crear
+Invoke-RestMethod -Method Post -Uri "http://localhost:3000/platos" `
+  -ContentType "application/json" `
+  -Body '{"nombre":"Ensalada César","precio":8.5,"disponible":true}'
+
+# Listar
+Invoke-RestMethod -Uri "http://localhost:3000/platos"
+
+# Ver uno
+Invoke-RestMethod -Uri "http://localhost:3000/platos/1"
+
+# Actualizar
+Invoke-RestMethod -Method Patch -Uri "http://localhost:3000/platos/1" `
+  -ContentType "application/json" `
+  -Body '{"precio":9.99}'
+
+# Eliminar
+Invoke-RestMethod -Method Delete -Uri "http://localhost:3000/platos/1"
+```
+
+3. En el navegador solo funcionan los **GET** (`/platos`, `/platos/1`).
+
+Orden recomendado de prueba: **POST → GET all → GET :id → PATCH → DELETE**.
+
+## Dependencias principales
+
+| Paquete | Uso |
+|---------|-----|
+| `@nestjs/typeorm` + `typeorm` | ORM |
+| `better-sqlite3` | Driver SQLite |
+| `class-validator` + `class-transformer` | Validación de DTOs |
+
+Todas están en `package.json`; con `npm install` el equipo no necesita instalarlas una a una.
+
+## Tecnologías
+
+- [NestJS](https://nestjs.com/) 11
+- [TypeORM](https://typeorm.io/) 1.x
+- SQLite (`better-sqlite3`)
+- TypeScript
+
+## Próximos pasos (equipo)
+
+- Módulos adicionales del dominio (pedidos, mesas, etc.)
+- Variables de entorno (`.env`) si se requiere configuración por entorno
+- Tests e2e / unitarios
+- Desactivar `synchronize` en producción y usar migraciones
+
+## Licencia
+
+Proyecto académico / equipo PRE-SAID — ver repositorio del curso para condiciones de uso.

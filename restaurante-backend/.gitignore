@@ -19,5 +19,9 @@ lerna-debug.log*
 # Cobertura de tests
 /coverage
 
+# Base de datos local (cada dev genera la suya)
+db.sqlite
+db.sqlite-journal
+
 # Otros
 .DS_Store
