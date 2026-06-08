@@ -70,9 +70,7 @@ export class MesasService {
   ): Promise<void> {
     const existente = await this.mesasRepository.findOne({ where: { numero } });
     if (existente && existente.id !== idExcluir) {
-      throw new ConflictException(
-        `Ya existe una mesa con el número ${numero}`,
-      );
+      throw new ConflictException(`Ya existe una mesa con el número ${numero}`);
     }
   }
 }

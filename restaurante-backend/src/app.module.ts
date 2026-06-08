@@ -9,18 +9,21 @@ import { Pedido } from './pedidos/entities/pedido.entity';
 import { PedidosModule } from './pedidos/pedidos.module';
 import { Plato } from './platos/entities/plato.entity';
 import { PlatosModule } from './platos/platos.module';
+import { Comanda } from './comandas/entities/comanda.entity';
+import { ComandasModule } from './comandas/comandas.module';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot({
       type: 'better-sqlite3',
       database: join(process.cwd(), 'db.sqlite'),
-      entities: [Plato, Mesa, Pedido],
+      entities: [Plato, Mesa, Pedido, Comanda],
       synchronize: true,
     }),
     PlatosModule,
     MesasModule,
     PedidosModule,
+    ComandasModule,
   ],
   controllers: [AppController],
   providers: [AppService],

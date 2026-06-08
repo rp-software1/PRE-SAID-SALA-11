@@ -4,6 +4,32 @@ Registro de cambios relevantes del proyecto PRE-SAID · Sala 11.
 
 ---
 
+## Día 4 — Módulo Comandas
+
+### Resumen
+
+Se agregó el módulo **Comandas** completo. Se estableció una relación `ManyToOne` con **Pedido**. Las comandas manejan estados (recibida, en_preparacion, lista) y validan el ID del pedido durante la creación. También se configuraron las relaciones anidadas para devolver el pedido y sus platos correspondientes en las peticiones GET, resolviendo las dependencias inyectando directamente los repositorios con `TypeOrmModule.forFeature([Comanda, Pedido])` para mantener el principio de aislamiento sin alterar `PedidosModule`.
+
+### Archivos creados
+
+```
+src/comandas/
+├── entities/
+│   ├── estado-comanda.enum.ts       # Enum: recibida, en_preparacion, lista
+│   └── comanda.entity.ts            # Entidad Comanda con ManyToOne a Pedido
+├── dto/
+│   ├── create-comanda.dto.ts        # DTO para POST /comandas
+│   └── update-estado-comanda.dto.ts # DTO para PATCH /comandas/:id/estado
+├── comandas.controller.ts           # Endpoints POST, GET y PATCH de estado
+├── comandas.service.ts              # Lógica de negocio y validaciones
+└── comandas.module.ts               # Módulo de comandas
+```
+
+### Archivos modificados
+
+* `src/app.module.ts`: Se importó y registró `ComandasModule` y la entidad `Comanda`.
+
+
 ## Día 3 — Módulo Pedidos
 
 ### Resumen
