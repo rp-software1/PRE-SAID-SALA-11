@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
   Column,
   CreateDateColumn,
@@ -15,17 +16,21 @@ import { EstadoPedido } from './estado-pedido.enum';
 
 @Entity('pedidos')
 export class Pedido {
+  @ApiProperty({ example: 1 })
   @PrimaryGeneratedColumn()
   id: number;
 
+  @ApiProperty({ type: () => Mesa })
   @ManyToOne(() => Mesa, { nullable: false })
   @JoinColumn({ name: 'mesaId' })
   mesa: Mesa;
 
+  @ApiProperty({ type: () => Plato, isArray: true })
   @ManyToMany(() => Plato)
   @JoinTable({ name: 'pedido_platos' })
   platos: Plato[];
 
+  @ApiProperty({ enum: EstadoPedido, example: EstadoPedido.PENDIENTE })
   @Column({
     type: 'text',
     enum: EstadoPedido,
@@ -33,12 +38,15 @@ export class Pedido {
   })
   estado: EstadoPedido;
 
+  @ApiProperty({ example: 25.5 })
   @Column('decimal', { precision: 10, scale: 2 })
   total: number;
 
+  @ApiProperty()
   @CreateDateColumn()
   createdAt: Date;
 
+  @ApiProperty()
   @UpdateDateColumn()
   updatedAt: Date;
 }

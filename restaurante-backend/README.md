@@ -36,6 +36,16 @@ npm run start:dev
 
 La API queda en **http://localhost:3000** (puerto por defecto; configurable con variable de entorno `PORT`).
 
+### Documentación Swagger
+
+Con el servidor en marcha, abre en el navegador:
+
+**http://localhost:3000/api**
+
+Ahí puedes ver y probar los endpoints de **platos**, **mesas** y **pedidos**.
+
+Dependencia: `@nestjs/swagger` (incluida en `package.json`; se instala con `npm install`).
+
 Al primer arranque se crea automáticamente **`db.sqlite`** en la raíz de `restaurante-backend`. Cada desarrollador tiene su propia base local; **no subas `db.sqlite` al repositorio** (datos de prueba personales).
 
 ### Problema frecuente: error de certificados SSL al instalar
@@ -187,6 +197,7 @@ Orden recomendado de prueba: **POST → GET all → GET :id → PATCH → DELETE
 | `@nestjs/typeorm` + `typeorm` | ORM |
 | `better-sqlite3` | Driver SQLite |
 | `class-validator` + `class-transformer` | Validación de DTOs |
+| `@nestjs/swagger` | Documentación OpenAPI en `/api` |
 
 Todas están en `package.json`; con `npm install` el equipo no necesita instalarlas una a una.
 
