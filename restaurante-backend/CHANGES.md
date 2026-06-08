@@ -4,7 +4,7 @@ Registro de cambios relevantes del proyecto PRE-SAID · Sala 11.
 
 ---
 
-## Día 4 — Módulo Comandas
+## Día 4 — Módulos Comandas y Tickets
 
 ### Resumen
 
@@ -28,6 +28,30 @@ src/comandas/
 ### Archivos modificados
 
 * `src/app.module.ts`: Se importó y registró `ComandasModule` y la entidad `Comanda`.
+
+### Módulo Tickets (Resumen)
+
+Se agregó el módulo **Tickets** completo. Un ticket pertenece a una `Mesa` (ManyToOne). Al crearlo, el sistema valida que la mesa exista y busca todos sus pedidos para sumar el total automáticamente. Si la mesa no tiene pedidos, arroja un error 400 (`BadRequestException`). Se definieron enumeradores para el estado (`abierto`, `pagado`) y métodos de pago (`efectivo`, `tarjeta`). Para aislar las dependencias de otros módulos, se importaron sus respectivos repositorios vía `TypeOrmModule.forFeature([Ticket, Mesa, Pedido])`.
+
+### Archivos creados (Tickets)
+
+```
+src/tickets/
+├── entities/
+│   ├── estado-ticket.enum.ts       # Enum: abierto, pagado
+│   ├── metodo-pago.enum.ts         # Enum: efectivo, tarjeta
+│   └── ticket.entity.ts            # Entidad Ticket vinculada a Mesa
+├── dto/
+│   ├── create-ticket.dto.ts        # DTO de creación (requiere mesaId)
+│   └── pagar-ticket.dto.ts         # DTO de actualización (requiere metodoPago)
+├── tickets.controller.ts           # Endpoints de creación, listado y pago
+├── tickets.service.ts              # Reglas de negocio (total automático, validaciones)
+└── tickets.module.ts               # Módulo independiente
+```
+
+### Archivos modificados (Tickets)
+
+* `src/app.module.ts`: Se registró `TicketsModule` y la entidad `Ticket`.
 
 
 ## Día 3 — Módulo Pedidos
