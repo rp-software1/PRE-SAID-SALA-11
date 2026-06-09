@@ -5,6 +5,9 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Habilitar CORS para permitir peticiones del navegador (localhost:3001)
+  app.enableCors();
+
   const config = new DocumentBuilder()
     .setTitle('Restaurante API')
     .setDescription(

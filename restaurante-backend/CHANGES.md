@@ -4,13 +4,13 @@ Registro de cambios relevantes del proyecto PRE-SAID · Sala 11.
 
 ---
 
-## Día 4 — Módulos Comandas y Tickets
+## Día 4 — Backend: Módulos Comandas y Tickets
 
 ### Resumen
 
 Se agregó el módulo **Comandas** completo. Se estableció una relación `ManyToOne` con **Pedido**. Las comandas manejan estados (recibida, en_preparacion, lista) y validan el ID del pedido durante la creación. También se configuraron las relaciones anidadas para devolver el pedido y sus platos correspondientes en las peticiones GET, resolviendo las dependencias inyectando directamente los repositorios con `TypeOrmModule.forFeature([Comanda, Pedido])` para mantener el principio de aislamiento sin alterar `PedidosModule`.
 
-### Archivos creados
+### Archivos creados (Comandas)
 
 ```
 src/comandas/
@@ -25,7 +25,7 @@ src/comandas/
 └── comandas.module.ts               # Módulo de comandas
 ```
 
-### Archivos modificados
+### Archivos modificados (Comandas)
 
 * `src/app.module.ts`: Se importó y registró `ComandasModule` y la entidad `Comanda`.
 
@@ -53,8 +53,71 @@ src/tickets/
 
 * `src/app.module.ts`: Se registró `TicketsModule` y la entidad `Ticket`.
 
+---
 
-## Día 3 — Módulo Pedidos
+## Día 4 — Frontend: Páginas y Componentes
+
+Se implementó el frontend completo utilizando **Next.js** y **TailwindCSS**, estructurado mediante la App Router de Next.js y organizado en páginas funcionales que interactúan con la API del backend.
+
+### Estructura de Páginas y Componentes
+
+```
+restaurante-frontend/src/app/
+├── layout.tsx                      # Layout principal con Navbar/Sidebar lateral
+├── page.tsx                        # Dashboard con estadísticas y navegación rápida
+├── mesas/
+│   └── page.tsx                    # Vista y administración de Mesas y estados
+├── platos/
+│   └── page.tsx                    # Catálogo y registro de Platos y disponibilidad
+└── pedidos/
+    └── page.tsx                    # Gestión y flujo de Comandas y carrito interactivo
+```
+
+### Detalle de Componentes y Páginas
+
+#### 1. Layout Principal (`layout.tsx`)
+* **Componente:** `RootLayout`
+* **Funcionalidad:**
+  * Define la estructura global del sitio con soporte de fuentes locales (`GeistVF` y `GeistMonoVF`).
+  * Implementa una barra lateral de navegación interactiva (`Sidebar`) para moverse rápidamente entre el Dashboard, Platos, Mesas y Pedidos.
+  * Muestra el estado del servicio en tiempo real ("Servicio Activo") con animaciones tipo pulso.
+
+#### 2. Dashboard (`page.tsx`)
+* **Componente:** `DashboardPage`
+* **Funcionalidad:**
+  * Obtiene estadísticas del backend mediante llamadas concurrentes con `Promise.all` a los endpoints de platos, mesas y pedidos.
+  * Muestra tarjetas dinámicas de resumen (Total Platos, Total Mesas, Pedidos Activos).
+  * Incluye paneles informativos y de navegación rápida hacia cada sección con efectos hover estilizados.
+  * Maneja alertas visuales si ocurre un error de conexión con el servidor backend.
+
+#### 3. Distribución de Mesas (`mesas/page.tsx`)
+* **Componente:** `MesasPage`
+* **Funcionalidad:**
+  * Lista todas las mesas registradas ordenadas por número.
+  * Permite alternar y actualizar el estado de cada mesa (Disponible, Ocupada, Reservada) directamente a través de peticiones `PATCH`.
+  * Contiene un formulario interactivo para registrar nuevas mesas con validaciones de campos en tiempo real (números positivos, control de duplicados).
+
+#### 4. Menú de Platos (`platos/page.tsx`)
+* **Componente:** `PlatosPage`
+* **Funcionalidad:**
+  * Muestra una tabla con los platos del menú, detallando el ID, nombre, precio y disponibilidad.
+  * Permite cambiar la disponibilidad de los platos de forma interactiva (Disponible / No Disponible) vía `PATCH`.
+  * Cuenta con un formulario para agregar nuevos platos (nombre, precio, disponibilidad por defecto) con validación de precios positivos.
+
+#### 5. Comandas y Pedidos (`pedidos/page.tsx`)
+* **Componente:** `PedidosPage`
+* **Funcionalidad:**
+  * Muestra el listado de comandas activas agrupando los platos repetidos para una visualización más limpia.
+  * Permite transicionar el estado de las comandas (`pendiente` &rarr; `en_preparacion` &rarr; `listo` &rarr; `entregado`) mediante un botón interactivo de acción.
+  * Cuenta con un **Creador de Comandas** completo que incluye:
+    * Selector de mesa.
+    * Selector rápido de platos disponibles en el menú.
+    * Un **Carrito de Compra** interactivo donde se puede agregar platos, ajustar cantidades (sumar/restar) o eliminar ítems del pedido.
+    * Cálculo automático del total estimado de la comanda antes de enviarla a cocina.
+
+---
+
+## Día 3 — Backend: Módulo Pedidos
 
 ### Resumen
 
@@ -86,8 +149,6 @@ src/pedidos/
 |----------|------------------|---------|
 | **ManyToOne** → Mesa | `Pedido` | `@JoinColumn({ name: 'mesaId' })` — FK en tabla `pedidos` |
 | **ManyToMany** → Plato | `Pedido` | `@JoinTable({ name: 'pedido_platos' })` — tabla intermedia `pedido_platos` |
-
-**No se modificaron** `plato.entity.ts` ni `mesa.entity.ts`. Las relaciones inversas (`@OneToMany`, `@ManyToMany` en Mesa/Plato) no son necesarias: TypeORM gestiona el esquema y la carga de relaciones desde el lado propietario en `Pedido`.
 
 ### Entidad `Pedido`
 
