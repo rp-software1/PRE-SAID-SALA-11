@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
+import { apiClient } from "@/lib/api";
 enum EstadoMesa {
   DISPONIBLE = "disponible",
   OCUPADA = "ocupada",
@@ -32,12 +32,12 @@ export default function MesasPage() {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch("http://localhost:3000/mesas");
+      const res = await apiClient.get("/mesas");
       if (!res.ok) throw new Error("Error en la respuesta del servidor");
       const data = await res.json();
       // Sort by table number
       setMesas(data.sort((a: Mesa, b: Mesa) => a.numero - b.numero));
-    } catch (err: any) {
+    } catch {
       setError("No se pudo conectar con el servidor para listar las mesas. Por favor, verifica el backend.");
     } finally {
       setLoading(false);
@@ -51,14 +51,8 @@ export default function MesasPage() {
   // Update Mesa State
   const cambiarEstado = async (id: number, nuevoEstado: EstadoMesa) => {
     try {
-      const res = await fetch(`http://localhost:3000/mesas/${id}/estado`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          estado: nuevoEstado,
-        }),
+      const res = await apiClient.patch(`/mesas/${id}/estado`, {
+        estado: nuevoEstado,
       });
 
       if (!res.ok) throw new Error("No se pudo actualizar el estado de la mesa.");
@@ -67,8 +61,8 @@ export default function MesasPage() {
       setMesas(prev =>
         prev.map(m => (m.id === id ? { ...m, estado: nuevoEstado } : m))
       );
-    } catch (err: any) {
-      alert("Error: " + err.message);
+    } catch (err) {
+      alert("Error: " + (err instanceof Error ? err.message : String(err)));
     }
   };
 
@@ -99,16 +93,10 @@ export default function MesasPage() {
 
     try {
       setIsSubmitting(true);
-      const res = await fetch("http://localhost:3000/mesas", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          numero: numMesa,
-          capacidad: capMesa,
-          estado: EstadoMesa.DISPONIBLE,
-        }),
+      const res = await apiClient.post("/mesas", {
+        numero: numMesa,
+        capacidad: capMesa,
+        estado: EstadoMesa.DISPONIBLE,
       });
 
       if (!res.ok) {
@@ -120,8 +108,8 @@ export default function MesasPage() {
       setCapacidad("");
       setFormSuccess(true);
       fetchMesas(); // Reload list
-    } catch (err: any) {
-      setFormError(err.message || "No se pudo crear la mesa. Inténtalo de nuevo.");
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : "No se pudo crear la mesa. Inténtalo de nuevo.");
     } finally {
       setIsSubmitting(false);
     }

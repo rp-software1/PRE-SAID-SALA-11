@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
+import { apiClient } from "@/lib/api";
 interface Plato {
   id: number;
   nombre: string;
@@ -27,12 +27,12 @@ export default function PlatosPage() {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch("http://localhost:3000/platos");
+      const res = await apiClient.get("/platos");
       if (!res.ok) throw new Error("Error en la respuesta del servidor");
       const data = await res.json();
       // Sort by name or id
       setPlatos(data.sort((a: Plato, b: Plato) => a.id - b.id));
-    } catch (err: any) {
+    } catch {
       setError("No se pudo conectar con el servidor para listar los platos. Por favor, verifica el backend.");
     } finally {
       setLoading(false);
@@ -62,16 +62,10 @@ export default function PlatosPage() {
 
     try {
       setIsSubmitting(true);
-      const res = await fetch("http://localhost:3000/platos", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          nombre: nombre.trim(),
-          precio: priceNum,
-          disponible,
-        }),
+      const res = await apiClient.post("/platos", {
+        nombre: nombre.trim(),
+        precio: priceNum,
+        disponible,
       });
 
       if (!res.ok) {
@@ -84,8 +78,8 @@ export default function PlatosPage() {
       setDisponible(true);
       setFormSuccess(true);
       fetchPlatos(); // Reload list
-    } catch (err: any) {
-      setFormError(err.message || "No se pudo crear el plato. Inténtalo de nuevo.");
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : "No se pudo crear el plato. Inténtalo de nuevo.");
     } finally {
       setIsSubmitting(false);
     }
@@ -94,14 +88,8 @@ export default function PlatosPage() {
   // Toggle Availability (Extra premium touch)
   const toggleDisponibilidad = async (plato: Plato) => {
     try {
-      const res = await fetch(`http://localhost:3000/platos/${plato.id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          disponible: !plato.disponible,
-        }),
+      const res = await apiClient.patch(`/platos/${plato.id}`, {
+        disponible: !plato.disponible,
       });
 
       if (!res.ok) throw new Error("No se pudo actualizar la disponibilidad.");
@@ -110,8 +98,8 @@ export default function PlatosPage() {
       setPlatos(prev =>
         prev.map(p => (p.id === plato.id ? { ...p, disponible: !p.disponible } : p))
       );
-    } catch (err: any) {
-      alert("Error al actualizar plato: " + err.message);
+    } catch (err) {
+      alert("Error al actualizar plato: " + (err instanceof Error ? err.message : String(err)));
     }
   };
 

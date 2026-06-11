@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
+import { apiClient } from "@/lib/api";
 enum EstadoPedido {
   PENDIENTE = "pendiente",
   EN_PREPARACION = "en_preparacion",
@@ -52,9 +52,9 @@ export default function PedidosPage() {
       setLoading(true);
       setError(null);
       const [pedidosRes, mesasRes, platosRes] = await Promise.all([
-        fetch("http://localhost:3000/pedidos"),
-        fetch("http://localhost:3000/mesas"),
-        fetch("http://localhost:3000/platos"),
+        apiClient.get("/pedidos"),
+        apiClient.get("/mesas"),
+        apiClient.get("/platos"),
       ]);
 
       if (!pedidosRes.ok || !mesasRes.ok || !platosRes.ok) {
@@ -69,7 +69,7 @@ export default function PedidosPage() {
       setPedidos(pedidosData.sort((a, b) => b.id - a.id));
       setMesas(mesasData.sort((a, b) => a.numero - b.numero));
       setPlatos(platosData.filter(p => p.disponible)); // Only allow ordering available plates
-    } catch (err: any) {
+    } catch {
       setError("No se pudo conectar con el servidor para obtener los datos de pedidos. Verifica el backend.");
     } finally {
       setLoading(false);
@@ -94,22 +94,16 @@ export default function PedidosPage() {
     }
 
     try {
-      const res = await fetch(`http://localhost:3000/pedidos/${id}/estado`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          estado: proximoEstado,
-        }),
+      const res = await apiClient.patch(`/pedidos/${id}/estado`, {
+        estado: proximoEstado,
       });
 
       if (!res.ok) throw new Error("No se pudo actualizar el estado de la comanda.");
 
       // Refresh data
       fetchData();
-    } catch (err: any) {
-      alert("Error: " + err.message);
+    } catch (err) {
+      alert("Error: " + (err instanceof Error ? err.message : String(err)));
     }
   };
 
@@ -172,15 +166,9 @@ export default function PedidosPage() {
 
     try {
       setIsSubmitting(true);
-      const res = await fetch("http://localhost:3000/pedidos", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          mesaId: parseInt(selectedMesaId),
-          platoIds,
-        }),
+      const res = await apiClient.post("/pedidos", {
+        mesaId: parseInt(selectedMesaId),
+        platoIds,
       });
 
       if (!res.ok) {
@@ -192,8 +180,8 @@ export default function PedidosPage() {
       setSelectedPlatosCart([]);
       setFormSuccess(true);
       fetchData(); // Reload orders and tables
-    } catch (err: any) {
-      setFormError(err.message || "No se pudo registrar la comanda.");
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : "No se pudo registrar la comanda.");
     } finally {
       setIsSubmitting(false);
     }

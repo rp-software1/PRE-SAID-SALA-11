@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { apiClient } from "@/lib/api";
 
 interface Plato {
   id: number;
@@ -39,9 +40,9 @@ export default function DashboardPage() {
       try {
         setError(null);
         const [platosRes, mesasRes, pedidosRes] = await Promise.all([
-          fetch("http://localhost:3000/platos"),
-          fetch("http://localhost:3000/mesas"),
-          fetch("http://localhost:3000/pedidos"),
+          apiClient.get("/platos"),
+          apiClient.get("/mesas"),
+          apiClient.get("/pedidos"),
         ]);
 
         if (!platosRes.ok || !mesasRes.ok || !pedidosRes.ok) {
@@ -58,9 +59,9 @@ export default function DashboardPage() {
           pedidosCount: pedidos.length,
           pedidosPendientes: pedidos.filter(p => p.estado === "pendiente" || p.estado === "en_preparacion").length,
         });
-      } catch (err: any) {
+      } catch {
         setError(
-          "No se pudo conectar con el servidor backend (NestJS). Asegúrate de que está corriendo en http://localhost:3000"
+          "No se pudo conectar con el servidor backend (NestJS). Asegúrate de que está corriendo."
         );
       } finally {
         setLoading(false);
