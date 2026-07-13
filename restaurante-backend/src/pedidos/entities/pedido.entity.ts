@@ -4,14 +4,13 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
-  JoinTable,
-  ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Mesa } from '../../mesas/entities/mesa.entity';
-import { Plato } from '../../platos/entities/plato.entity';
+import { PedidoItem } from './pedido-item.entity';
 import { EstadoPedido } from './estado-pedido.enum';
 
 @Entity('pedidos')
@@ -25,10 +24,9 @@ export class Pedido {
   @JoinColumn({ name: 'mesaId' })
   mesa: Mesa;
 
-  @ApiProperty({ type: () => Plato, isArray: true })
-  @ManyToMany(() => Plato)
-  @JoinTable({ name: 'pedido_platos' })
-  platos: Plato[];
+  @ApiProperty({ type: () => PedidoItem, isArray: true })
+  @OneToMany(() => PedidoItem, (item) => item.pedido, { cascade: true })
+  items: PedidoItem[];
 
   @ApiProperty({ enum: EstadoPedido, example: EstadoPedido.PENDIENTE })
   @Column({

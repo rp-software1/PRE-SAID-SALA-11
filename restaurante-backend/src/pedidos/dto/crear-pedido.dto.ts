@@ -5,7 +5,20 @@ import {
   IsInt,
   IsNotEmpty,
   IsPositive,
+  ValidateNested,
 } from 'class-validator';
+
+export class PedidoItemDto {
+  @IsInt()
+  @IsPositive()
+  @IsNotEmpty()
+  platoId: number;
+
+  @IsInt()
+  @IsPositive()
+  @IsNotEmpty()
+  cantidad: number;
+}
 
 export class CrearPedidoDto {
   @IsInt()
@@ -16,8 +29,7 @@ export class CrearPedidoDto {
 
   @IsArray()
   @ArrayNotEmpty()
-  @IsInt({ each: true })
-  @IsPositive({ each: true })
-  @IsNotEmpty()
-  platoIds: number[];
+  @ValidateNested({ each: true })
+  @Type(() => PedidoItemDto)
+  items: PedidoItemDto[];
 }

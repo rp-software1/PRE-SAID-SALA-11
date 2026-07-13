@@ -6,7 +6,9 @@ import {
   IsNotEmpty,
   IsOptional,
   IsPositive,
+  ValidateNested,
 } from 'class-validator';
+import { PedidoItemDto } from './crear-pedido.dto';
 
 export class ActualizarPedidoDto {
   @IsOptional()
@@ -19,8 +21,7 @@ export class ActualizarPedidoDto {
   @IsOptional()
   @IsArray()
   @ArrayNotEmpty()
-  @IsInt({ each: true })
-  @IsPositive({ each: true })
-  @IsNotEmpty()
-  platoIds?: number[];
+  @ValidateNested({ each: true })
+  @Type(() => PedidoItemDto)
+  items?: PedidoItemDto[];
 }

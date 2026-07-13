@@ -13,13 +13,14 @@ import { Comanda } from './comandas/entities/comanda.entity';
 import { ComandasModule } from './comandas/comandas.module';
 import { Ticket } from './tickets/entities/ticket.entity';
 import { TicketsModule } from './tickets/tickets.module';
+import { PedidoItem } from './pedidos/entities/pedido-item.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot({
       type: 'better-sqlite3',
       database: join(process.cwd(), 'db.sqlite'),
-      entities: [Plato, Mesa, Pedido, Comanda, Ticket],
+      entities: [Plato, Mesa, Pedido, Comanda, Ticket, PedidoItem],
       synchronize: true,
     }),
     PlatosModule,

@@ -8,17 +8,20 @@ import { In, Repository } from 'typeorm';
 import { Mesa } from '../mesas/entities/mesa.entity';
 import { Plato } from '../platos/entities/plato.entity';
 import { ActualizarPedidoDto } from './dto/actualizar-pedido.dto';
-import { CrearPedidoDto } from './dto/crear-pedido.dto';
+import { CrearPedidoDto, PedidoItemDto } from './dto/crear-pedido.dto';
 import { EstadoPedido } from './entities/estado-pedido.enum';
 import { Pedido } from './entities/pedido.entity';
+import { PedidoItem } from './entities/pedido-item.entity';
 
 @Injectable()
 export class PedidosService {
-  private readonly relaciones = { relations: { mesa: true, platos: true } };
+  private readonly relaciones = { relations: { mesa: true, items: { plato: true } } };
 
   constructor(
     @InjectRepository(Pedido)
     private readonly pedidosRepository: Repository<Pedido>,
+    @InjectRepository(PedidoItem)
+    private readonly pedidoItemsRepository: Repository<PedidoItem>,
     @InjectRepository(Mesa)
     private readonly mesasRepository: Repository<Mesa>,
     @InjectRepository(Plato)
@@ -27,15 +30,17 @@ export class PedidosService {
 
   async crear(crearPedidoDto: CrearPedidoDto): Promise<Pedido> {
     const mesa = await this.validarMesa(crearPedidoDto.mesaId);
-    const platos = await this.validarYObtenerPlatos(crearPedidoDto.platoIds);
-    const total = this.calcularTotal(platos);
+    
+    const itemsProcesados = await this.validarYProcesarItems(crearPedidoDto.items);
+    const total = itemsProcesados.reduce((suma, item) => suma + item.subtotal, 0);
 
     const pedido = this.pedidosRepository.create({
       mesa,
-      platos,
+      items: itemsProcesados,
       total,
       estado: EstadoPedido.PENDIENTE,
     });
+    
     const guardado = await this.pedidosRepository.save(pedido);
     return this.encontrarUno(guardado.id);
   }
@@ -65,11 +70,13 @@ export class PedidosService {
       pedido.mesa = await this.validarMesa(actualizarPedidoDto.mesaId);
     }
 
-    if (actualizarPedidoDto.platoIds !== undefined) {
-      pedido.platos = await this.validarYObtenerPlatos(
-        actualizarPedidoDto.platoIds,
-      );
-      pedido.total = this.calcularTotal(pedido.platos);
+    if (actualizarPedidoDto.items !== undefined) {
+      // Eliminar los items anteriores para evitar huérfanos
+      await this.pedidoItemsRepository.delete({ pedidoId: id });
+      
+      const nuevosItems = await this.validarYProcesarItems(actualizarPedidoDto.items);
+      pedido.items = nuevosItems;
+      pedido.total = nuevosItems.reduce((suma, item) => suma + item.subtotal, 0);
     }
 
     await this.pedidosRepository.save(pedido);
@@ -96,14 +103,18 @@ export class PedidosService {
     return mesa;
   }
 
-  private async validarYObtenerPlatos(platoIds: number[]): Promise<Plato[]> {
+  private async validarYProcesarItems(itemsDto: PedidoItemDto[]) {
+    const platoIds = itemsDto.map(item => item.platoId);
     const idsUnicos = [...new Set(platoIds)];
+    
     const platosEncontrados = await this.platosRepository.find({
       where: { id: In(idsUnicos) },
     });
+    
     const platosPorId = new Map(
       platosEncontrados.map((plato) => [plato.id, plato]),
     );
+    
     const idsFaltantes = idsUnicos.filter((id) => !platosPorId.has(id));
 
     if (idsFaltantes.length > 0) {
@@ -112,10 +123,13 @@ export class PedidosService {
       );
     }
 
-    return platoIds.map((id) => platosPorId.get(id)!);
-  }
-
-  private calcularTotal(platos: Plato[]): number {
-    return platos.reduce((suma, plato) => suma + Number(plato.precio), 0);
+    return itemsDto.map((item) => {
+      const plato = platosPorId.get(item.platoId)!;
+      return this.pedidoItemsRepository.create({
+        plato,
+        cantidad: item.cantidad,
+        subtotal: Number(plato.precio) * item.cantidad,
+      });
+    });
   }
 }

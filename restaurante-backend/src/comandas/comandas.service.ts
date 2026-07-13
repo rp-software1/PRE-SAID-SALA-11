@@ -38,7 +38,10 @@ export class ComandasService {
     return this.comandaRepository.find({
       relations: {
         pedido: {
-          platos: true,
+          mesa: true,
+          items: {
+            plato: true,
+          },
         },
       },
     });
