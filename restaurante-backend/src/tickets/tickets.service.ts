@@ -2,6 +2,8 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -11,6 +13,8 @@ import { PagarTicketDto } from './dto/pagar-ticket.dto';
 import { Mesa } from '../mesas/entities/mesa.entity';
 import { Pedido } from '../pedidos/entities/pedido.entity';
 import { EstadoTicket } from './entities/estado-ticket.enum';
+import { MesasService } from '../mesas/mesas.service';
+import { EstadoMesa } from '../mesas/entities/estado-mesa.enum';
 
 @Injectable()
 export class TicketsService {
@@ -21,6 +25,8 @@ export class TicketsService {
     private readonly mesaRepository: Repository<Mesa>,
     @InjectRepository(Pedido)
     private readonly pedidoRepository: Repository<Pedido>,
+    @Inject(forwardRef(() => MesasService))
+    private readonly mesasService: MesasService,
   ) {}
 
   async create(createTicketDto: CreateTicketDto): Promise<Ticket> {
@@ -78,13 +84,21 @@ export class TicketsService {
   }
 
   async pagar(id: number, pagarTicketDto: PagarTicketDto): Promise<Ticket> {
-    const ticket = await this.ticketRepository.findOne({ where: { id } });
+    const ticket = await this.ticketRepository.findOne({ 
+      where: { id },
+      relations: { mesa: true },
+    });
+    
     if (!ticket) {
       throw new NotFoundException(`Ticket con ID ${id} no encontrado`);
     }
 
     ticket.estado = EstadoTicket.PAGADO;
     ticket.metodoPago = pagarTicketDto.metodoPago;
+
+    if (ticket.mesa) {
+      await this.mesasService.cambiarEstado(ticket.mesa.id, EstadoMesa.DISPONIBLE);
+    }
 
     return this.ticketRepository.save(ticket);
   }

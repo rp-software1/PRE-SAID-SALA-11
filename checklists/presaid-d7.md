@@ -7,8 +7,8 @@ loom:
 ---
 ## Bloques
 - [x] A — Video: diagnóstico cruzado + cambio de requisitos
-- [ ] B — Implementar Cambio 1: cantidades por plato en pedidos
-- [ ] C — Implementar Cambio 2: mesa auto-ocupada + diagnóstico cruzado
+- [x] B — Implementar Cambio 1: cantidades por plato en pedidos
+- [x] C — Implementar Cambio 2: mesa auto-ocupada + diagnóstico cruzado
 - [ ] D — Documentar: qué se rompió y por qué + Loom + PR
 ## Verificación final
 - [ ] Pedidos aceptan cantidades por plato

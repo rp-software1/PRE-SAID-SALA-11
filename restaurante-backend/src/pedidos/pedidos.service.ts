@@ -2,6 +2,8 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
@@ -12,6 +14,8 @@ import { CrearPedidoDto, PedidoItemDto } from './dto/crear-pedido.dto';
 import { EstadoPedido } from './entities/estado-pedido.enum';
 import { Pedido } from './entities/pedido.entity';
 import { PedidoItem } from './entities/pedido-item.entity';
+import { MesasService } from '../mesas/mesas.service';
+import { EstadoMesa } from '../mesas/entities/estado-mesa.enum';
 
 @Injectable()
 export class PedidosService {
@@ -26,11 +30,17 @@ export class PedidosService {
     private readonly mesasRepository: Repository<Mesa>,
     @InjectRepository(Plato)
     private readonly platosRepository: Repository<Plato>,
-  ) {}
+    @Inject(forwardRef(() => MesasService))
+    private readonly mesasService: MesasService,
+  ) { }
 
   async crear(crearPedidoDto: CrearPedidoDto): Promise<Pedido> {
     const mesa = await this.validarMesa(crearPedidoDto.mesaId);
-    
+
+    if (mesa.estado === EstadoMesa.RESERVADA) {
+      throw new BadRequestException(`No se pueden crear pedidos para una mesa reservada`);
+    }
+
     const itemsProcesados = await this.validarYProcesarItems(crearPedidoDto.items);
     const total = itemsProcesados.reduce((suma, item) => suma + item.subtotal, 0);
 
@@ -40,8 +50,11 @@ export class PedidosService {
       total,
       estado: EstadoPedido.PENDIENTE,
     });
-    
+
     const guardado = await this.pedidosRepository.save(pedido);
+
+    await this.mesasService.cambiarEstado(mesa.id, EstadoMesa.OCUPADA);
+
     return this.encontrarUno(guardado.id);
   }
 
@@ -73,7 +86,7 @@ export class PedidosService {
     if (actualizarPedidoDto.items !== undefined) {
       // Eliminar los items anteriores para evitar huérfanos
       await this.pedidoItemsRepository.delete({ pedidoId: id });
-      
+
       const nuevosItems = await this.validarYProcesarItems(actualizarPedidoDto.items);
       pedido.items = nuevosItems;
       pedido.total = nuevosItems.reduce((suma, item) => suma + item.subtotal, 0);
@@ -106,15 +119,15 @@ export class PedidosService {
   private async validarYProcesarItems(itemsDto: PedidoItemDto[]) {
     const platoIds = itemsDto.map(item => item.platoId);
     const idsUnicos = [...new Set(platoIds)];
-    
+
     const platosEncontrados = await this.platosRepository.find({
       where: { id: In(idsUnicos) },
     });
-    
+
     const platosPorId = new Map(
       platosEncontrados.map((plato) => [plato.id, plato]),
     );
-    
+
     const idsFaltantes = idsUnicos.filter((id) => !platosPorId.has(id));
 
     if (idsFaltantes.length > 0) {
