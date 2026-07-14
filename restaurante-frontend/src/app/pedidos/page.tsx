@@ -23,10 +23,17 @@ interface Mesa {
   estado: string;
 }
 
+interface PedidoItem {
+  id: number;
+  cantidad: number;
+  subtotal: number;
+  plato: Plato;
+}
+
 interface Pedido {
   id: number;
   mesa: Mesa;
-  platos: Plato[];
+  items: PedidoItem[];
   estado: EstadoPedido;
   total: number;
   createdAt: string;
@@ -156,19 +163,17 @@ export default function PedidosPage() {
       return;
     }
 
-    // Expand cart items into flat list of IDs for the backend
-    const platoIds: number[] = [];
-    selectedPlatosCart.forEach(item => {
-      for (let i = 0; i < item.cantidad; i++) {
-        platoIds.push(item.plato.id);
-      }
-    });
+    // Prepare items for the backend
+    const items = selectedPlatosCart.map(item => ({
+      platoId: item.plato.id,
+      cantidad: item.cantidad
+    }));
 
     try {
       setIsSubmitting(true);
       const res = await apiClient.post("/pedidos", {
         mesaId: parseInt(selectedMesaId),
-        platoIds,
+        items,
       });
 
       if (!res.ok) {
@@ -219,18 +224,7 @@ export default function PedidosPage() {
     }
   };
 
-  // Aggregate duplicate plates inside a order for clean display
-  const agruparPlatosPedido = (platosArray: Plato[]) => {
-    const counts: { [key: number]: { plato: Plato; qty: number } } = {};
-    platosArray.forEach(plato => {
-      if (counts[plato.id]) {
-        counts[plato.id].qty += 1;
-      } else {
-        counts[plato.id] = { plato, qty: 1 };
-      }
-    });
-    return Object.values(counts);
-  };
+  // Función agruparPlatosPedido eliminada ya que el backend agrupa los items
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 animate-fade-in">
@@ -273,8 +267,6 @@ export default function PedidosPage() {
           ) : (
             <div className="space-y-4">
               {pedidos.map((pedido) => {
-                const platosAgrupados = agruparPlatosPedido(pedido.platos);
-
                 return (
                   <div
                     key={pedido.id}
@@ -298,19 +290,19 @@ export default function PedidosPage() {
 
                       {/* Dishes List */}
                       <ul className="space-y-1">
-                        {platosAgrupados.map((item) => (
+                        {pedido.items?.map((item) => (
                           <li
-                            key={item.plato.id}
+                            key={item.id}
                             className="text-sm text-slate-600 dark:text-slate-300 flex items-center justify-between"
                           >
                             <span>
                               <span className="font-mono font-bold text-slate-400 dark:text-slate-500 mr-1">
-                                {item.qty}x
+                                {item.cantidad}x
                               </span>
-                              {item.plato.nombre}
+                              {item.plato?.nombre}
                             </span>
                             <span className="text-xs font-semibold text-slate-400">
-                              ${(item.plato.precio * item.qty).toFixed(2)}
+                              ${Number(item.subtotal).toFixed(2)}
                             </span>
                           </li>
                         ))}

@@ -2,7 +2,7 @@
 /dist
 /artifacts
 /build
-
+/
 # Dependencias
 /node_modules
 /restaurante-backend/node_modules
@@ -33,3 +33,11 @@ Thumbs.db
 
 # NestJS específico
 /restaurante-backend/dist
+
+# bdd
+/restaurante-backend/db.sqlite
+/restaurante-backend/db.sqlite-journal
+/restaurante-backend/db.sqlite-wal
+/restaurante-backend/db.sqlite-shm
+/restaurante-backend/data/db.db
+/restaurante-backend/data/db.db-journal
