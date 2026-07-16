@@ -1,0 +1,10 @@
+PREDICCIÓN 12
+Escribir ANTES de ver el resultado:
+¿La IA podrá cambiar la relación ManyToMany a una tabla intermedia con campo 'cantidad' sin romper el resto del sistema? ¿Cuántos archivos necesitará modificar? ¿Romperá el frontend?
+Si podrá cambiar la relación ManyToMany a una tabla intermedia con campo 'cantidad' sin romper el resto del sistema, necesitará modificar 9 archivos pero puede que rompa el frontend.
+
+
+PREDICCIÓN 13
+Escribir ANTES de ver el resultado:
+Este cambio cruza 3 módulos (Pedidos, Tickets, Mesas). ¿La IA podrá coordinar los 3 sin romper algo? ¿Importará MesasService en PedidosService? ¿Habrá dependencias circulares?
+No podrá coordinar los 3 sin romper nada ya que necesitaria el contexto de los 3 módulos y rompería el ciclo de vida de los tickets , si importará MesasService en PedidosService y no habria dependencias circulares ya que la mesa debe estar disponible para crear un pedido y debe estar ocupada cuando se crea un ticket.
