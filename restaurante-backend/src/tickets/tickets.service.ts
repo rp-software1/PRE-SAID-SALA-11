@@ -6,7 +6,7 @@ import {
   forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, IsNull } from 'typeorm';
 import { Ticket } from './entities/ticket.entity';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { PagarTicketDto } from './dto/pagar-ticket.dto';
@@ -41,7 +41,7 @@ export class TicketsService {
     }
 
     const pedidos = await this.pedidoRepository.find({
-      where: { mesa: { id: mesa.id } },
+      where: { mesa: { id: mesa.id }, ticket: IsNull() },
     });
 
     if (pedidos.length === 0) {
@@ -60,27 +60,27 @@ export class TicketsService {
       total,
     });
 
-    return this.ticketRepository.save(newTicket);
+    const savedTicket = await this.ticketRepository.save(newTicket);
+
+    for (const pedido of pedidos) {
+      pedido.ticket = savedTicket;
+      await this.pedidoRepository.save(pedido);
+    }
+
+    return savedTicket;
   }
 
   async findOne(id: number): Promise<any> {
     const ticket = await this.ticketRepository.findOne({
       where: { id },
-      relations: { mesa: true },
+      relations: { mesa: true, pedidos: true },
     });
 
     if (!ticket) {
       throw new NotFoundException(`Ticket con ID ${id} no encontrado`);
     }
 
-    const pedidos = await this.pedidoRepository.find({
-      where: { mesa: { id: ticket.mesa.id } },
-    });
-
-    return {
-      ...ticket,
-      pedidos,
-    };
+    return ticket;
   }
 
   async pagar(id: number, pagarTicketDto: PagarTicketDto): Promise<Ticket> {

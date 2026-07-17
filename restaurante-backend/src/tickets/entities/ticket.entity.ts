@@ -5,11 +5,13 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Mesa } from '../../mesas/entities/mesa.entity';
 import { EstadoTicket } from './estado-ticket.enum';
 import { MetodoPago } from './metodo-pago.enum';
+import { Pedido } from '../../pedidos/entities/pedido.entity';
 
 @Entity('tickets')
 export class Ticket {
@@ -21,6 +23,10 @@ export class Ticket {
   @ManyToOne(() => Mesa, { nullable: false })
   @JoinColumn({ name: 'mesaId' })
   mesa: Mesa;
+
+  @ApiProperty({ type: () => Pedido, isArray: true })
+  @OneToMany(() => Pedido, (pedido) => pedido.ticket)
+  pedidos: Pedido[];
 
   @ApiProperty({ example: 120.5 })
   @Column('decimal', { precision: 10, scale: 2 })

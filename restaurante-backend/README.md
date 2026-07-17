@@ -1,220 +1,101 @@
 # Restaurante Backend (PRE-SAID · Sala 11)
 
-API REST con **NestJS** para gestionar el menú de platos del restaurante. Incluye persistencia local con **SQLite** (sin servidor de base de datos externo).
+¡Bienvenido al código fuente del servidor (Backend) de nuestro sistema de gestión de restaurantes! 
 
-## Estado del proyecto (Día 1)
+Este proyecto proporciona toda la "inteligencia" y el manejo de datos (API REST) necesario para que la aplicación funcione. Aquí se guardan los menús, las mesas, se calculan las cuentas y se gestionan las comandas para la cocina.
 
-| Componente | Estado |
-|------------|--------|
-| Módulo **Platos** (CRUD completo) | Listo |
-| TypeORM + SQLite (`db.sqlite`) | Configurado |
-| Validación de DTOs (`class-validator`) | Activo en `/platos` |
-| Tests automatizados | Pendiente |
+---
 
-## Requisitos previos
+## 📖 Introducción (Para personas no técnicas)
 
-- **Node.js** 20 LTS o superior ([nodejs.org](https://nodejs.org)). Comprobar:
-  ```bash
-  node -v
-  npm -v
-  ```
-- Si `npm` no se reconoce en Windows: añadir `C:\Program Files\nodejs` al **PATH** y reiniciar la terminal.
-- En Windows, `better-sqlite3` puede pedir herramientas de compilación. Si falla al instalar, instala [Visual Studio Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) con la carga **“Desarrollo de escritorio con C++”**.
+Imagina este Backend como el **"Cerebro y Archivero"** del restaurante. 
+Cuando un mesero usa la aplicación (Frontend) para tomar un pedido, la aplicación le manda un mensaje a este Backend. Nuestro Backend revisa si la mesa existe, si los platos están disponibles, calcula el total de la cuenta, se lo anota al cocinero y finalmente guarda todo en una libreta segura (Base de Datos).
 
-## Puesta en marcha (para todo el equipo)
+### 🧩 Módulos Principales del Sistema
 
-```bash
-# 1. Clonar el repo y entrar a esta carpeta
-cd restaurante-backend
+El restaurante está dividido en 5 áreas clave:
 
-# 2. Instalar dependencias
-npm install
+1. **🍔 Platos:** El menú del restaurante. Permite crear, modificar precios y ocultar platos que se hayan agotado.
+2. **🪑 Mesas:** Representa el espacio físico. Las mesas pueden estar `DISPONIBLES`, `OCUPADAS` o `RESERVADAS`.
+3. **📝 Pedidos:** Lo que el cliente quiere comer. Cada pedido se vincula a una mesa e incluye múltiples platos con sus cantidades.
+4. **👨‍🍳 Comandas:** Es el "ticket de cocina". Ayuda a los cocineros a saber qué preparar y cambiar el estado cuando la comida está lista.
+5. **🧾 Tickets (Cuentas):** El proceso de facturación. Suma todos los pedidos de una mesa, genera la cuenta total y registra el método de pago (Efectivo/Tarjeta).
 
-# 3. Arrancar en modo desarrollo
-npm run start:dev
-```
+---
 
-La API queda en **http://localhost:3000** (puerto por defecto; configurable con variable de entorno `PORT`).
+## 💻 Tecnologías (Para Desarrolladores)
 
-### Documentación Swagger
+Este proyecto está construido con herramientas modernas, robustas y de uso empresarial:
 
-Con el servidor en marcha, abre en el navegador:
+- **[NestJS 11](https://nestjs.com/):** Framework de Node.js estructurado y modular (similar a Angular, pero para servidores).
+- **[TypeORM](https://typeorm.io/):** Herramienta que traduce nuestro código TypeScript a consultas de base de datos (SQL) automáticamente.
+- **SQLite (`better-sqlite3`):** Base de datos ultra-ligera basada en un solo archivo.
+- **TypeScript:** JavaScript con esteroides (tipado fuerte) para evitar errores.
+- **Swagger:** Sistema que auto-genera documentación interactiva de la API.
 
-**http://localhost:3000/api**
+---
 
-Ahí puedes ver y probar los endpoints de **platos**, **mesas** y **pedidos**.
+## 🚀 Puesta en marcha (Cómo ejecutar el proyecto)
 
-Dependencia: `@nestjs/swagger` (incluida en `package.json`; se instala con `npm install`).
+### Requisitos previos
+- Tener instalado **Node.js** (versión 20 o superior).
 
-Al primer arranque se crea automáticamente **`db.sqlite`** en la raíz de `restaurante-backend`. Cada desarrollador tiene su propia base local; **no subas `db.sqlite` al repositorio** (datos de prueba personales).
+### Pasos para iniciar
 
-### Problema frecuente: error de certificados SSL al instalar
+1. **Clonar e ingresar a la carpeta:**
+   Asegúrate de estar dentro de la carpeta `restaurante-backend` en tu terminal.
+   
+2. **Instalar dependencias:**
+   ```bash
+   npm install
+   ```
 
-En redes con proxy, antivirus o VPN puede aparecer:
+3. **Arrancar el servidor en modo desarrollo:**
+   ```bash
+   npm run start:dev
+   ```
 
-```text
-npm error code UNABLE_TO_VERIFY_LEAF_SIGNATURE
-```
+¡Listo! El servidor estará escuchando en **`http://localhost:3000`**.
 
-Instalación temporal (solo si lo anterior falla):
+---
 
-```bash
-npm install --strict-ssl=false
-```
+## 🗄️ Base de Datos Local (`db.sqlite`)
 
-O para un solo comando:
+Para facilitar el desarrollo, no necesitas instalar programas complicados como MySQL o PostgreSQL. 
+El sistema usa **SQLite**. Al arrancar el servidor por primera vez, TypeORM creará automáticamente un archivo llamado **`db.sqlite`** en esta carpeta. 
 
-```bash
-npm install @nestjs/typeorm typeorm better-sqlite3 class-validator class-transformer --strict-ssl=false
-```
+- **¿Se rompió algo o quieres empezar de cero?** Simplemente apaga el servidor, borra el archivo `db.sqlite` y vuelve a ejecutar `npm run start:dev`. ¡El sistema creará una base de datos nueva y vacía al instante!
+- *(Nota: Este archivo está ignorado en `.gitignore` para no subir datos falsos al repositorio)*.
 
-En casa o con otro Wi‑Fi suele bastar `npm install` normal.
+---
 
-## Scripts disponibles
+## 📚 Documentación Interactiva (Swagger)
+
+No necesitas adivinar qué rutas existen ni cómo enviar los datos. NestJS genera una documentación visual e interactiva automáticamente.
+
+Con el servidor encendido, abre tu navegador y entra a:
+👉 **[http://localhost:3000/api](http://localhost:3000/api)**
+
+Desde ahí podrás ver todos los "Endpoints" (rutas) de Platos, Mesas, Pedidos, Comandas y Tickets. ¡Incluso puedes hacer peticiones de prueba directamente desde esa pantalla dando clic en *"Try it out"*!
+
+---
+
+## 🏗️ Estructura del Código
+
+Si quieres explorar el código, esta es la anatomía básica que usamos en cada módulo (ej. `platos`):
+
+- **`platos.controller.ts`**: (El Recepcionista). Recibe la petición web (GET, POST), lee lo que pide el usuario y se lo pasa al Service.
+- **`platos.service.ts`**: (El Cerebro). Contiene la "Lógica de Negocio". Hace los cálculos matemáticos, validaciones y decide si la acción es permitida.
+- **`entities/plato.entity.ts`**: (El Molde). Define qué columnas tendrá la tabla en la base de datos.
+- **`dto/...`**: (Los Filtros de Seguridad). Data Transfer Objects. Definen qué datos son obligatorios y qué tipo de datos son (ej. "el precio debe ser un número positivo").
+
+---
+
+## 🛠️ Scripts Disponibles
 
 | Comando | Descripción |
 |---------|-------------|
-| `npm run start:dev` | Desarrollo con recarga automática |
-| `npm run start` | Arranque sin watch |
-| `npm run build` | Compila a `dist/` |
-| `npm run start:prod` | Ejecuta build de producción |
-| `npm run lint` | ESLint |
-| `npm run test` | Tests unitarios (cuando existan) |
-
-## Estructura del código
-
-```text
-src/
-├── app.module.ts          # TypeORM (SQLite) + módulos
-├── main.ts
-└── platos/
-    ├── platos.module.ts
-    ├── platos.controller.ts
-    ├── platos.service.ts
-    ├── dto/
-    │   ├── crear-plato.dto.ts
-    │   └── actualizar-plato.dto.ts
-    └── entities/
-        └── plato.entity.ts
-```
-
-## Base de datos
-
-- **Motor:** SQLite vía driver `better-sqlite3`
-- **Archivo:** `db.sqlite` (raíz del proyecto)
-- **Tabla:** `platos`
-- **Sincronización:** `synchronize: true` en desarrollo (TypeORM crea/actualiza el esquema al iniciar)
-
-### Entidad `Plato`
-
-| Campo | Tipo | Notas |
-|-------|------|--------|
-| `id` | number | Autogenerado |
-| `nombre` | string | Máx. 100 caracteres |
-| `precio` | number | Decimal, debe ser positivo |
-| `disponible` | boolean | Por defecto `true` |
-| `createdAt` | Date | Automático |
-| `updatedAt` | Date | Automático |
-
-## API REST — Platos
-
-Base: `http://localhost:3000`
-
-| Método | Ruta | Descripción | Body |
-|--------|------|-------------|------|
-| `POST` | `/platos` | Crear plato | JSON obligatorio |
-| `GET` | `/platos` | Listar todos | — |
-| `GET` | `/platos/:id` | Obtener por id | — |
-| `PATCH` | `/platos/:id` | Actualizar (parcial) | JSON parcial |
-| `DELETE` | `/platos/:id` | Eliminar | — → **204** sin cuerpo |
-
-### Crear plato — `POST /platos`
-
-Headers: `Content-Type: application/json`
-
-```json
-{
-  "nombre": "Pizza margarita",
-  "precio": 12.5,
-  "disponible": true
-}
-```
-
-`disponible` es opcional (default `true`).
-
-### Actualizar plato — `PATCH /platos/:id`
-
-Solo envía los campos a cambiar:
-
-```json
-{
-  "precio": 14.99,
-  "disponible": false
-}
-```
-
-### Respuestas de error habituales
-
-| Código | Motivo |
-|--------|--------|
-| `400` | Body inválido o validación fallida (precio ≤ 0, nombre vacío, campos no permitidos) |
-| `404` | No existe un plato con ese `id` |
-
-## Cómo probar los endpoints
-
-1. Asegúrate de que `npm run start:dev` esté en ejecución sin errores.
-2. Usa **Postman**, **Thunder Client** (extensión de VS Code/Cursor) o **PowerShell**:
-
-```powershell
-# Crear
-Invoke-RestMethod -Method Post -Uri "http://localhost:3000/platos" `
-  -ContentType "application/json" `
-  -Body '{"nombre":"Ensalada César","precio":8.5,"disponible":true}'
-
-# Listar
-Invoke-RestMethod -Uri "http://localhost:3000/platos"
-
-# Ver uno
-Invoke-RestMethod -Uri "http://localhost:3000/platos/1"
-
-# Actualizar
-Invoke-RestMethod -Method Patch -Uri "http://localhost:3000/platos/1" `
-  -ContentType "application/json" `
-  -Body '{"precio":9.99}'
-
-# Eliminar
-Invoke-RestMethod -Method Delete -Uri "http://localhost:3000/platos/1"
-```
-
-3. En el navegador solo funcionan los **GET** (`/platos`, `/platos/1`).
-
-Orden recomendado de prueba: **POST → GET all → GET :id → PATCH → DELETE**.
-
-## Dependencias principales
-
-| Paquete | Uso |
-|---------|-----|
-| `@nestjs/typeorm` + `typeorm` | ORM |
-| `better-sqlite3` | Driver SQLite |
-| `class-validator` + `class-transformer` | Validación de DTOs |
-| `@nestjs/swagger` | Documentación OpenAPI en `/api` |
-
-Todas están en `package.json`; con `npm install` el equipo no necesita instalarlas una a una.
-
-## Tecnologías
-
-- [NestJS](https://nestjs.com/) 11
-- [TypeORM](https://typeorm.io/) 1.x
-- SQLite (`better-sqlite3`)
-- TypeScript
-
-## Próximos pasos (equipo)
-
-- Módulos adicionales del dominio (pedidos, mesas, etc.)
-- Variables de entorno (`.env`) si se requiere configuración por entorno
-- Tests e2e / unitarios
-- Desactivar `synchronize` en producción y usar migraciones
-
-## Licencia
-
-Proyecto académico / equipo PRE-SAID — ver repositorio del curso para condiciones de uso.
+| `npm run start:dev` | Arranca el servidor. Se actualiza solo cada vez que guardas un cambio en el código. |
+| `npm run build` | Transforma todo el TypeScript a JavaScript puro en la carpeta `/dist`. |
+| `npm run test` | Ejecuta las pruebas automatizadas (Unit Testing). |
+| `npm run lint` | Revisa el código buscando errores de estilo o sintaxis. |
